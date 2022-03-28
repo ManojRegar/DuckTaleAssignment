@@ -1,0 +1,123 @@
+﻿
+@{
+    ViewBag.Title = "StudentList2";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Content/jquery.dataTables-1.11.5.min.css" rel="stylesheet" />
+<h2>Students List</h2>
+<div class="row mb-5">
+    <div class="col-lg-7">
+        <div class="row">
+            <div class="col-lg-5">
+                <input type="text" id="txtSearch" name="txtSearch" class="form-control" />
+            </div>
+            <div class="col-lg-5">
+                <select id="ddlFilter" name="ddlFilter" class="form-control" onchange="bindDatatable();">
+                    <option value="">Select Filter </option>
+                    <option value="cls">Class</option>
+                    <option value="sub">Subject</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button type="button" onclick="bindDatatable()" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5 text-right">
+        <div class="row">
+            <div class="col-lg-12">
+                @Html.ActionLink("Create Student", "CreateStudent2", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-bordered" id="tblStudent">
+            <thead>
+                <tr class="head-tr-bg">
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Class</th>
+                    <th scope="col">Subjet</th>
+                    <th scope="col">Marks</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section scripts{
+<script src="~/Scripts/jquery.dataTables-1.11.5.min.js"></script>
+<script>
+        var tblStudent = null;
+        $(document).ready(function () {
+            bindDatatable();
+        });
+
+    function deleteRecord(id, rec) {
+        var url = rec == "std" ? "@Url.Action("DeleteStudent")" : "@Url.Action("DeleteSubject")";
+        var msg = "Are you sure, you want to delete " + (rec == "std" ? "student" : "subject")+" record?";
+        if (confirm(msg)) {
+            $.ajax({
+                url: url,
+                data: { id: id },
+                async: false,
+                type: "POST",
+                success: function (response) {
+                    alert(response);
+                    window.location = window.location;
+                }
+            });
+        }
+    }
+
+        function bindDatatable() {
+            if (tblStudent) {
+                tblStudent.destroy();
+            }
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetStudentsList")',
+                data: { searchKey: $("#txtSearch").val(), filterKey: $("#ddlFilter").val()},
+                dataType: "json",
+                success: function (response) {
+                    tblStudent = $("#tblStudent").DataTable(
+                        {
+                            filter: false,
+                            sort: false,
+                            paginate: false,
+                            data: response,
+                            columns: [
+                                { 'data': 'FirstName', 'name': 'FirstName' },
+                                { 'data': 'LastName', 'name': 'LastName' },
+                                { 'data': 'Class', 'name': 'Class' },
+                                { 'data': 'SubjectName', 'name': 'SubjectName' },
+                                { 'data': 'Marks', 'name': 'Marks' },
+                                {
+                                    'data': 'StudentID', 'name': 'StudentID', render: function (data, type, row) {
+                                        var htmlStr = ""
+                                        if (row.IsFirst == true) {
+                                            htmlStr = '<a class="btn btn-xs btn-primary stdcolumn" href="/Student/EditStudent2/'+data+'">Edit</a>'
+                                                + ' <button type="button" onclick="deleteRecord(' + data + ',\'std\')" class="btn btn-xs btn-danger" value="Delete">Delete</button>';
+                                        }
+                                        else {
+                                            htmlStr = '<a class="btn btn-xs btn-primary" href="/Student/EditSubject?id=' + row.SubjectID + '&isSample2=true">Edit</a>'
+                                                + ' <button type="button" onclick="deleteRecord(' + row.SubjectID + ',\'sub\')" class="btn btn-xs btn-danger" value="Delete">Delete</button>'
+                                        }
+                                        return htmlStr;
+                                    }
+                                }
+                            ],
+                            initComplete: function () {
+                                $(".stdcolumn").each(function () {
+                                    $(this).parents("tr").addClass("tr-bg");
+                                })
+                            }
+                        });
+                }
+            });
+        }
+</script>
+}

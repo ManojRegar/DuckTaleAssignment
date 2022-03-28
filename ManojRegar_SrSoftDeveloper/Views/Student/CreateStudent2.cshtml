@@ -1,0 +1,125 @@
+﻿
+@{
+    ViewBag.Title = "CreateStudent2";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script>
+    function addSubject() {
+        var existingSubjectCount = $("#subjectsContainer .subjectsdiv").length;
+        $("#subjectsContainer").append('<div class="subjectsdiv"><input id="ID_' + existingSubjectCount + '" type="hidden" class="text-box single-line" value="0"><div class="form-group "><div class="col-md-3"><label class="control-label">Subject Name</label><span class="text-danger">*</span></div><div class="col-md-9"><input class="form-control text-box single-line" id="Name_' + existingSubjectCount + '" type="text" ></div></div><div class="form-group"><div class="col-md-3"><label class="control-label" >Marks</label><span class="text-danger">*</span></div><div class="col-md-9"><input class="form-control text-box single-line" id="Marks_' + existingSubjectCount + '" type="text" ></div></div></div>')
+        $("#Marks_" + existingSubjectCount).inputmask({ alias: "decimal", integerDigits: 3, digits: 2, allowMinus: false, digitsOptional: false, placeholder: "0", min: 1, max: 100 });
+    }
+
+    function save() {
+        $("#spnFormerror").removeClass("display-block");
+        var errorCount = 0;
+        if ($("#FirstName").val() == "" || $("#LastName").val() == "" || $("#Class").val() == "") {
+            errorCount = errorCount+1;
+        }
+
+        $("#subjectsContainer .text-box.single-line").each(function () {
+            if ($(this).val() == "") {
+                errorCount = errorCount + 1;
+            }
+        })
+
+        if (errorCount > 0) {
+            $("#spnFormerror").addClass("display-block");
+        }
+        else {
+            var stdObj = {};
+            stdObj.ID = $("#ID").val();
+            stdObj.FirstName = $("#FirstName").val();
+            stdObj.LastName = $("#LastName").val();
+            stdObj.Class = $("#Class").val();
+
+            var subArray = [];
+            var temp = $("#subjectsContainer .subjectsdiv");
+
+            for (i = 0; i < temp.length; i++) {
+                var subObj = {};
+                var temp2 = $(temp[i]).find(".text-box.single-line");
+                subObj.ID = $(temp2[0]).val();
+                subObj.Name = $(temp2[1]).val();
+                subObj.Marks = $(temp2[2]).val();
+                subArray.push(subObj)
+            }
+            stdObj.Subjects = subArray;
+
+            $.ajax({
+                url: "@Url.Action("CreateStudent2")",
+                data: { model: stdObj },
+                async: false,
+                type: "POST",
+                success: function (response) {
+                    alert(response);
+                    window.location = window.location;
+                }
+            });
+        }
+    }
+</script>
+<h2>Create Student</h2>
+<hr />
+<div class="row form-horizontal">
+    <div class="col-md-6">
+        <input id="ID" name="ID" type="hidden" class="text-box single-line" value="0">
+        <div class="form-group">
+            <div class="col-md-3">
+                @Html.Label("First Name", new { @class = "control-label" })<span class="text-danger">*</span>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBox("FirstName", null, new { @class = "form-control" })
+                <span class="text-danger display-none" id="errorFirstName">First Name field is required.</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-3">
+                @Html.Label("Last Name", new { @class = "control-label" })<span class="text-danger">*</span>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBox("LastName", null, new { @class = "form-control" })
+                <span class="text-danger display-none" id="errorLastName">Last Name field is required.</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-3">
+                @Html.Label("Class", new { @class = "control-label" })<span class="text-danger">*</span>
+            </div>
+            <div class="col-md-9">
+                @Html.TextBox("Class", null, new { @class = "form-control" })
+                <span class="text-danger display-none" id="errorClass">Class field is required.</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-12 text-center">
+                <input type="button" value="Add Subject" class="btn btn-primary" onclick="addSubject()" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row form-horizontal">
+    <div class="col-md-6" id="subjectsContainer">
+
+    </div>
+</div>
+<div class="row form-horizontal">
+    <div class="col-md-6">
+        <div class="form-group">
+            <div class="col-md-9 text-right">
+                <input type="button" value="Save" class="btn btn-success" onclick="save()" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row form-horizontal">
+    <div class="col-md-6 text-center">
+        <span id="spnFormerror" class="font16 text-danger display-none">Please fill reuired data. Label marked with (*)</span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        @Html.ActionLink("Back to List", "StudentsList2")
+    </div>
+</div>

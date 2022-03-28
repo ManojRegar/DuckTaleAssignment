@@ -1,0 +1,119 @@
+﻿@model IEnumerable<ManojRegar_SrSoftDeveloper.Models.Students>
+
+@{
+    ViewBag.Title = "StudentsList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var txtSearch = TempData["txtSearch"] == null ? "" : TempData["txtSearch"].ToString();
+    var ddlFilter = TempData["txtSearch"] == null ? "" : TempData["ddlFilter"].ToString();
+}
+<h2>Students List</h2>
+<div class="row">
+    <div class="col-lg-7">
+        @using (Html.BeginForm("Index", "Student", FormMethod.Post))
+        {
+        <div class="row mb-5">
+            <div class="col-lg-5">
+                <input type="text" id="txtSearch" name="txtSearch" class="form-control" />
+            </div>
+            <div class="col-lg-5">
+                <select id="ddlFilter" name="ddlFilter" class="form-control">
+                    <option value="">Select Filter </option>
+                    <option value="cls">Class</option>
+                    <option value="sub">Subject</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+        }
+    </div>
+    <div class="col-lg-5 text-right">
+        <div class="row">
+            <div class="col-lg-12">
+                @Html.ActionLink("Create Student", "CreateStudent", null, new { @class = "btn btn-primary" })
+                @Html.ActionLink("Create Subject", "CreateSubject", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table">
+    <tr class="head-tr-bg">
+        <th>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.LastName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Class)
+        </th>
+        <th>
+            @Html.DisplayName("Subjet")
+        </th>
+        <th>
+            @Html.DisplayName("Marks")
+        </th>
+        <th>@Html.DisplayName("Actions")</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr class="tr-bg">
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Class)
+            </td>
+            <td></td>
+            <td></td>
+            <td>
+                @Html.ActionLink("Edit", "EditStudent", new { id = item.ID }, new { @class = "btn btn-xs btn-primary" })
+                <button type="button" onclick="deleteRecord(@item.ID,'std')" class="btn btn-xs btn-danger" value="Delete">Delete</button>
+
+            </td>
+        </tr>
+        foreach (var sub in item.Subjects)
+        {
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>@sub.Name</td>
+                <td>@sub.Marks</td>
+                <td>
+                    @Html.ActionLink("Edit", "EditSubject", new { id = sub.ID }, new { @class = "btn btn-xs btn-primary" })
+                    <button type="button" onclick="deleteRecord(@sub.ID,'sub')" class="btn btn-xs btn-danger" value="Delete">Delete</button>
+                </td>
+            </tr>
+        }
+    }
+</table>
+@*@Scripts.Render("~/bundles/jquery")*@
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#txtSearch').val('@txtSearch');
+        $('#ddlFilter').val('@ddlFilter');
+    });
+    function deleteRecord(id, rec) {
+        var url = rec == "std" ? "@Url.Action("DeleteStudent")" : "@Url.Action("DeleteSubject")";
+        var msg = "Are you sure, you want to delete " + (rec == "std" ? "student" : "subject")+" record?";
+        if (confirm(msg)) {
+            $.ajax({
+                url: url,
+                data: { id: id },
+                async: false,
+                type: "POST",
+                success: function (response) {
+                    alert(response);
+                    window.location = window.location;
+                }
+            });
+        }
+    }
+
+</script>
